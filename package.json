@@ -1,0 +1,51 @@
+{
+  "name": "boosty",
+  "version": "1.0.4",
+  "main": "index.js",
+  "scripts": {
+    "build": "rimraf ./dist && tsc",
+    "start:prod": "npm run build && node ./dist/index.ts",
+    "start:dev": "npx nodemon",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
+  "keywords": [
+    "lava",
+    "lava-sdk",
+    "lava-ru"
+  ],
+  "description": "SDK for boosty.to",
+  "homepage": "https://boosty.to/",
+  "bugs": "https://github.com/an1by/boosty-js/issues",
+  "author": "An1by (https://github.com/an1by/)",
+  "license": "MIT",
+  "funding": {
+    "type": "boosty",
+    "url": "https://boosty.to/aniby/donate"
+  },
+  "repository": "github:an1by/boosty-js",
+  "devDependencies": {
+    "@eslint/js": "^9.9.1",
+    "@types/express": "^4.17.21",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^22.5.1",
+    "eslint": "^9.9.1",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "globals": "^15.9.0",
+    "jest": "^29.7.0",
+    "nock": "^13.5.0",
+    "nodemon": "^3.1.4",
+    "prettier": "^3.3.3",
+    "rimraf": "^6.0.1",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^8.3.0"
+  },
+  "dependencies": {
+    "axios": "^1.7.5"
+  }
+}
