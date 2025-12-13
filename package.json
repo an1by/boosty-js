@@ -11,20 +11,19 @@
     "test:coverage": "jest --coverage"
   },
   "keywords": [
-    "lava",
-    "lava-sdk",
-    "lava-ru"
+    "boosty",
+    "boosty-js"
   ],
   "description": "SDK for boosty.to",
   "homepage": "https://boosty.to/",
   "bugs": "https://github.com/an1by/boosty-js/issues",
   "author": "An1by (https://github.com/an1by/)",
+  "repository": "github:an1by/boosty-js",
   "license": "MIT",
   "funding": {
     "type": "boosty",
     "url": "https://boosty.to/aniby/donate"
   },
-  "repository": "github:an1by/boosty-js",
   "devDependencies": {
     "@eslint/js": "^9.9.1",
     "@types/express": "^4.17.21",
