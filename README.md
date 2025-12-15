@@ -1,32 +1,63 @@
 # Boosty API SDK
 
+[![npm version](https://img.shields.io/npm/v/boosty.svg)](https://www.npmjs.com/package/boosty)
+[![npm downloads](https://img.shields.io/npm/dm/boosty.svg)](https://www.npmjs.com/package/boosty)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.5+-blue.svg)](https://www.typescriptlang.org/)
+
 TypeScript SDK для работы с [Boosty API](https://boosty.to/). Полностью типизированный асинхронный клиент для получения и управления данными из Boosty, включая посты, комментарии, подписки, цели и другие сущности.
 
-## Установка
+## 📋 Содержание
+
+- [Установка](#-установка)
+- [Требования](#-требования)
+- [Быстрый старт](#-быстрый-старт)
+- [Особенности](#-особенности)
+- [Аутентификация](#-аутентификация)
+- [API Reference](#-api-reference)
+  - [Посты](#посты)
+  - [Комментарии](#комментарии)
+  - [Цели (Targets)](#цели-targets)
+  - [Подписки](#подписки)
+  - [Подписчики](#подписчики)
+  - [Витрина](#витрина)
+  - [Статистика](#статистика)
+- [Модели данных](#-модели-данных)
+- [Обработка ошибок](#-обработка-ошибок)
+- [Утилиты](#-утилиты)
+- [Разработка](#-разработка)
+- [Структура проекта](#-структура-проекта)
+- [Благодарности](#-благодарности)
+- [Лицензия](#-лицензия)
+
+## 📦 Установка
 
 ```bash
 npm install boosty
 ```
 
-## Быстрый старт
+## ⚙️ Требования
+
+- Node.js >= 14.0.0
+- TypeScript >= 4.5.0 (опционально, для TypeScript проектов)
+
+## 🚀 Быстрый старт
 
 ```typescript
-import axios from 'axios';
 import { BoostyClient } from 'boosty';
 
 // Создаем экземпляр клиента
-const client = axios.create();
-const boostyClient = new BoostyClient(client, 'https://api.boosty.to');
+const boostyClient = new BoostyClient();
 
-// Настраиваем аутентификацию (bearer token)
-await boostyClient.setBearerToken('your-access-token');
+// Настраиваем аутентификацию (использование Refresh Token предпочтительнее)
+boostyClient.setRefreshTokenAndDeviceId('your-refresh-token', 'your-device-id');
 
 // Получаем пост
-const post = await boostyClient.getPost('blogname', 'post-id');
+const post = await boostyClient.getPost('aniby', 'post-id');
 console.log(post.title);
 ```
 
-## Особенности
+## ✨ Особенности
 
 - ✅ **Полная типизация TypeScript** — все модели и методы полностью типизированы
 - ✅ **Асинхронный API** — все методы возвращают Promise
@@ -34,157 +65,271 @@ console.log(post.title);
 - ✅ **Унифицированная обработка ошибок** — понятные типы ошибок с детальной информацией
 - ✅ **Автоматическая пагинация** — встроенная поддержка получения всех данных постранично
 - ✅ **Модульная архитектура** — легко расширяемая структура
+- ✅ **Автоматическое обновление токенов** — при использовании refresh token flow
 
-## Аутентификация
+## 🔐 Аутентификация
+
+Данные для аутентификации можно взять на странице https://boosty.to с помощью панели разработчика `(F12) -> Applications -> Local storage -> https://boosty.to`.
+
+> - `auth.accessToken` - Access token (Bearer)
+> - `auth.refreshToken` - Refresh token
+> - `_clientId` - Device ID
+
+Если объект еще не появился в хранилище, нужно перезагрузить страницу.
 
 SDK поддерживает два способа аутентификации:
 
 ### Bearer Token (статический токен)
 
+Используется для простой аутентификации с заранее полученным токеном. Токен не обновляется автоматически.
+
 ```typescript
-await boostyClient.setBearerToken('your-access-token');
+boostyClient.setBearerToken('your-access-token');
 ```
 
 ### Refresh Token Flow (OAuth-подобный)
 
+Рекомендуемый способ аутентификации. SDK автоматически обновляет access token при необходимости.
+
 ```typescript
-await boostyClient.setRefreshTokenAndDeviceId(
-  'your-refresh-token',
-  'your-device-id',
-);
+boostyClient.setRefreshTokenAndDeviceId('your-refresh-token', 'your-device-id');
 ```
 
-При использовании refresh token flow SDK автоматически обновляет access token при необходимости.
+### Управление аутентификацией
 
-## Основные методы API
+```typescript
+// Очистить refresh token и device ID
+boostyClient.clearRefreshAndDeviceId();
+
+// Очистить access token
+boostyClient.clearAccessToken();
+```
+
+## 📚 API Reference
 
 ### Посты
 
-```typescript
-// Получить один пост
-const post = await boostyClient.getPost('blogname', 'post-id');
+#### `getPost(blogName: string, postId: string): Promise<Post>`
 
-// Получить несколько постов
-const posts = await boostyClient.getPosts('blogname', 50, 20);
+Получить один пост по идентификатору.
+
+```typescript
+const post = await boostyClient.getPost('blogname', 'post-id');
+console.log(post.title, post.text);
+```
+
+#### `getPosts(blogName: string, limit?: number, offset?: number): Promise<Post[]>`
+
+Получить список постов с пагинацией.
+
+```typescript
+// Получить первые 50 постов
+const posts = await boostyClient.getPosts('blogname', 50, 0);
+
+// Получить следующую страницу
+const nextPosts = await boostyClient.getPosts('blogname', 50, 50);
 ```
 
 ### Комментарии
 
-```typescript
-// Получить комментарии поста
-const comments = await boostyClient.getAllComments('blogname', 'post-id');
+#### `getAllComments(blogName: string, postId: string): Promise<Comment[]>`
 
-// Получить ответ с пагинацией
+Получить все комментарии поста (автоматическая пагинация).
+
+```typescript
+const comments = await boostyClient.getAllComments('blogname', 'post-id');
+```
+
+#### `getCommentsResponse(blogName: string, postId: string, limit?: number, replyLimit?: number, order?: string): Promise<CommentsResponse>`
+
+Получить комментарии с пагинацией и настройками.
+
+```typescript
 const response = await boostyClient.getCommentsResponse(
   'blogname',
   'post-id',
   20, // limit
   3, // replyLimit
-  'top', // order
+  'top', // order: 'top' | 'new' | 'old'
 );
+```
 
-// Создать комментарий
-import { createTextBlock } from 'boosty';
+#### `createComment(blogName: string, postId: string, blocks: CommentBlock[], replyId?: string): Promise<Comment>`
+
+Создать новый комментарий или ответ на комментарий.
+
+```typescript
+import { createTextBlock, createSmileBlock } from 'boosty';
 
 const newComment = await boostyClient.createComment(
   'blogname',
   'post-id',
-  [createTextBlock('Текст комментария')],
+  [createTextBlock('Текст комментария'), createSmileBlock('😀')],
   replyId, // опционально, для ответа на комментарий
 );
 ```
 
 ### Цели (Targets)
 
+#### `getBlogTargets(blogName: string): Promise<Target[]>`
+
+Получить все цели блога.
+
+```typescript
+const targets = await boostyClient.getBlogTargets('blogname');
+```
+
+#### `createBlogTarget(blogName: string, description: string, targetAmount: number, targetType: TargetType): Promise<Target>`
+
+Создать новую цель.
+
 ```typescript
 import { TargetType } from 'boosty';
 
-// Получить все цели блога
-const targets = await boostyClient.getBlogTargets('blogname');
-
-// Создать новую цель
 const target = await boostyClient.createBlogTarget(
   'blogname',
   'Описание цели',
   100000, // целевая сумма
   TargetType.Money, // или TargetType.Subscribers
 );
+```
 
-// Обновить цель
+#### `updateBlogTarget(targetId: string, description?: string, targetAmount?: number): Promise<Target>`
+
+Обновить существующую цель.
+
+```typescript
 const updated = await boostyClient.updateBlogTarget(
   targetId,
   'Новое описание',
   150000,
 );
+```
 
-// Удалить цель
+#### `deleteBlogTarget(targetId: string): Promise<void>`
+
+Удалить цель.
+
+```typescript
 await boostyClient.deleteBlogTarget(targetId);
 ```
 
 ### Подписки
 
+#### `getBlogSubscriptionLevels(blogName: string, showFreeLevel?: boolean): Promise<SubscriptionLevelResponse>`
+
+Получить уровни подписки блога.
+
 ```typescript
-// Получить уровни подписки блога
 const levels = await boostyClient.getBlogSubscriptionLevels(
   'blogname',
-  true, // showFreeLevel
+  true, // showFreeLevel - включить бесплатный уровень
 );
+```
 
-// Получить подписки текущего пользователя
+#### `getUserSubscriptions(limit?: number, withFollow?: boolean): Promise<SubscriptionsResponse>`
+
+Получить подписки текущего пользователя.
+
+```typescript
 const subscriptions = await boostyClient.getUserSubscriptions(
   50, // limit
-  true, // withFollow
+  true, // withFollow - включить отслеживаемые блоги
 );
 ```
 
 ### Подписчики
 
+#### `getBlogSubscribers(blogName: string, sortBy?: string, offset?: number, limit?: number, order?: string): Promise<SubscribersResponse>`
+
+Получить список подписчиков блога.
+
 ```typescript
-// Получить список подписчиков блога
 const subscribers = await boostyClient.getBlogSubscribers(
   'blogname',
   'created_at', // sortBy
   0, // offset
   50, // limit
-  'desc', // order
+  'desc', // order: 'asc' | 'desc'
 );
 ```
 
 ### Витрина
 
+#### `getShowcase(blogName: string, limit?: number, onlyVisible?: boolean, offset?: number): Promise<ShowcaseResponse>`
+
+Получить витрину блога.
+
 ```typescript
-// Получить витрину блога
 const showcase = await boostyClient.getShowcase(
   'blogname',
   20, // limit
-  true, // onlyVisible
+  true, // onlyVisible - только видимые элементы
   0, // offset
 );
+```
 
-// Изменить статус витрины
+#### `changeShowcaseStatus(blogName: string, status: boolean): Promise<void>`
+
+Изменить статус витрины (включить/выключить).
+
+```typescript
 await boostyClient.changeShowcaseStatus('blogname', true);
 ```
 
-## Модели данных
+### Статистика
+
+#### `getBlogStats(blogName?: string, params?: Record<string, string | number | boolean>): Promise<Stats>`
+
+Получить статистику блога с опциональными параметрами.
+
+```typescript
+const stats = await boostyClient.getBlogStats('blogname', {
+  start_date: '2024-01-01',
+  end_date: '2024-12-31',
+});
+```
+
+#### `getBlogCurrentStats(blogName?: string): Promise<Current>`
+
+Получить текущую статистику блога.
+
+```typescript
+const currentStats = await boostyClient.getBlogCurrentStats('blogname');
+```
+
+## 📦 Модели данных
 
 Все модели экспортируются из пакета и полностью типизированы:
 
 ```typescript
 import {
+  // Основные модели
   Post,
   Comment,
   Target,
+  TargetType,
   SubscriptionLevel,
+  Subscription,
   ShowcaseResponse,
   SubscriptionsResponse,
   SubscribersResponse,
+  Stats,
+  Current,
+  User,
+  Tag,
+  Reaction,
   // ... и другие
 } from 'boosty';
 ```
 
-## Обработка ошибок
+Полный список доступных типов можно найти в директории `src/model/`.
 
-SDK использует унифицированную систему обработки ошибок:
+## ⚠️ Обработка ошибок
+
+SDK использует унифицированную систему обработки ошибок. Все ошибки наследуются от класса `ApiError` и содержат код ошибки и детальное сообщение.
+
+### Типы ошибок
 
 ```typescript
 import { ApiError, ApiErrorCode } from 'boosty';
@@ -200,27 +345,49 @@ try {
       case ApiErrorCode.HttpRequest:
         console.error('Ошибка сетевого запроса:', error.message);
         break;
+      case ApiErrorCode.HttpStatus:
+        console.error('Неожиданный HTTP статус:', error.message);
+        break;
       case ApiErrorCode.JsonParse:
         console.error('Ошибка парсинга JSON');
         break;
-      // ... другие коды ошибок
+      case ApiErrorCode.Deserialization:
+        console.error('Ошибка десериализации данных:', error.message);
+        break;
+      default:
+        console.error('Неизвестная ошибка:', error.message);
     }
+  } else {
+    console.error('Неожиданная ошибка:', error);
   }
 }
 ```
 
-## Утилиты
+### Коды ошибок
+
+- `ApiErrorCode.Unauthorized` - Ошибка аутентификации (401)
+- `ApiErrorCode.HttpRequest` - Ошибка сетевого запроса
+- `ApiErrorCode.HttpStatus` - Неожиданный HTTP статус
+- `ApiErrorCode.JsonParse` - Ошибка парсинга JSON
+- `ApiErrorCode.Deserialization` - Ошибка десериализации данных
+
+## 🛠️ Утилиты
 
 ### Работа с медиа контентом
+
+Извлечение медиа элементов из поста (видео, изображения, аудио и т.д.).
 
 ```typescript
 import { extractMediaContent } from 'boosty';
 
+const post = await boostyClient.getPost('blogname', 'post-id');
 const media = extractMediaContent(post);
-// Возвращает массив медиа элементов (видео, изображения, аудио и т.д.)
+// Возвращает массив медиа элементов
 ```
 
 ### Создание блоков комментариев
+
+Вспомогательные функции для создания структурированных комментариев.
 
 ```typescript
 import { createTextBlock, createTextEndBlock, createSmileBlock } from 'boosty';
@@ -230,15 +397,42 @@ const blocks = [
   createSmileBlock('😀'),
   createTextEndBlock(),
 ];
+
+await boostyClient.createComment('blogname', 'post-id', blocks);
 ```
 
-## Разработка
+### Настройка блога по умолчанию
+
+Установка блога по умолчанию для упрощения вызовов API.
+
+```typescript
+// Установить блог по умолчанию
+boostyClient.setDefaultBlogName('blogname');
+
+// Теперь можно вызывать методы без указания blogName
+const post = await boostyClient.getPost(undefined, 'post-id');
+
+// Очистить значение по умолчанию
+boostyClient.clearDefaultBlogName();
+```
+
+## 🔧 Разработка
+
+### Клонирование репозитория
+
+```bash
+git clone https://github.com/an1by/boosty-js.git
+cd boosty-js
+npm install
+```
 
 ### Сборка проекта
 
 ```bash
 npm run build
 ```
+
+Собранные файлы будут находиться в директории `dist/`.
 
 ### Запуск тестов
 
@@ -259,41 +453,29 @@ npm run test:coverage
 npm run start:dev
 ```
 
-## Структура проекта
+Проект будет автоматически пересобираться при изменении исходных файлов.
 
-```
-src/
-├── apiClient.ts          # Основной класс BoostyClient
-├── apiClient/            # Модули API методов
-│   ├── post.ts
-│   ├── comment.ts
-│   ├── target.ts
-│   ├── subscriptionLevel.ts
-│   ├── showcase.ts
-│   ├── user.ts
-│   └── subscribers.ts
-├── model/                # Типы и модели данных
-├── authProvider.ts       # Управление аутентификацией
-├── error.ts              # Обработка ошибок
-└── helper.ts             # Вспомогательные функции
-```
-
-## Благодарности
+## 🙏 Благодарности
 
 Этот проект был создан с использованием следующих референсов:
 
 - [boosty_api_rs](https://github.com/ath31st/boosty_api_rs) — Rust версия Boosty API клиента от [ath31st](https://github.com/ath31st)
-- [boosty (Go)](https://gitverse.ru/kovardin/boosty/) — Go версия Boosty API библиотеки от [kovardin](https://gitverse.ru/kovardin)
+- [boosty (Go)](https://github.com/akovardin/boosty) — Go версия Boosty API библиотеки от [akovardin](https://github.com/akovardin)
 
-## Лицензия
+## 📄 Лицензия
 
-MIT
+Этот проект распространяется под лицензией MIT. См. [LICENSE](LICENSE).
 
-## Автор
+## 👤 Автор
 
-[An1by](https://github.com/an1by/)
+**An1by**
 
-## Поддержка
+- GitHub: [@an1by](https://github.com/an1by/)
+- GitLab: [@an1by](https://gitlab.com/an1by/)
+- Boosty: [aniby](https://boosty.to/aniby)
+
+## 💬 Поддержка
 
 - 🐛 [Сообщить о проблеме](https://github.com/an1by/boosty-js/issues)
+- 💡 [Предложить улучшение](https://github.com/an1by/boosty-js/issues)
 - 💰 [Поддержать проект](https://boosty.to/aniby/donate)

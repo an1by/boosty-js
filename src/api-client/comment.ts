@@ -6,8 +6,8 @@ declare module '.' {
     /**
      * Получить ответ комментариев
      *
-     * @param blogName - Имя блога (blog url)
      * @param postId - ID поста
+     * @param blogName - опциональное имя блога (blog url). Если не указано, используется значение по умолчанию
      * @param limit - Лимит комментариев на запрос (опционально)
      * @param replyLimit - Уровни ответов (опционально)
      * @param order - Top или bottom (опционально)
@@ -15,12 +15,12 @@ declare module '.' {
      * @returns При успехе возвращает `CommentsResponse`, содержащий поле `data` с элементами `Comment`
      * @throws `ApiError::Unauthorized`, если HTTP статус 401 Unauthorized
      * @throws `ApiError::HttpStatus` для других неуспешных HTTP статусов, со статусом и информацией об эндпоинте
-     * @throws `ApiError::HttpRequest`, если HTTP запрос не удался
+     * @throws `ApiError::HttpRequest`, если HTTP запрос не удался или blogName не указан
      * @throws `ApiError::JsonParseDetailed`, если тело ответа не может быть распарсено в `CommentsResponse`
      */
     getCommentsResponse(
-      blogName: string,
       postId: string,
+      blogName?: string,
       limit?: number,
       replyLimit?: number,
       order?: string,
@@ -30,20 +30,20 @@ declare module '.' {
     /**
      * Получить все комментарии для поста
      *
-     * @param blogName - Имя блога (blog url)
      * @param postId - ID поста
+     * @param blogName - опциональное имя блога (blog url). Если не указано, используется значение по умолчанию
      * @param limit - Лимит комментариев на запрос (опционально)
      * @param replyLimit - Уровни ответов (опционально)
      * @param order - Top или bottom (опционально)
      * @returns При успехе возвращает вектор элементов `Comment`
      * @throws `ApiError::Unauthorized`, если HTTP статус 401 Unauthorized
      * @throws `ApiError::HttpStatus` для других неуспешных HTTP статусов, со статусом и информацией об эндпоинте
-     * @throws `ApiError::HttpRequest`, если HTTP запрос не удался
+     * @throws `ApiError::HttpRequest`, если HTTP запрос не удался или blogName не указан
      * @throws `ApiError::JsonParseDetailed`, если тело ответа не может быть распарсено в `Comment`
      */
     getAllComments(
-      blogName: string,
       postId: string,
+      blogName?: string,
       limit?: number,
       replyLimit?: number,
       order?: string,
@@ -52,35 +52,36 @@ declare module '.' {
     /**
      * Создать новый комментарий
      *
-     * @param blogName - Имя блога (blog url)
      * @param postId - ID поста
      * @param blocks - Массив элементов `CommentBlock` с содержимым комментария
+     * @param blogName - опциональное имя блога (blog url). Если не указано, используется значение по умолчанию
      * @param replyId - ID ответа (опционально)
      * @returns При успехе возвращает элемент `Comment`
      * @throws `ApiError::Unauthorized`, если HTTP статус 401 Unauthorized
      * @throws `ApiError::HttpStatus` для других неуспешных HTTP статусов, со статусом и информацией об эндпоинте
-     * @throws `ApiError::HttpRequest`, если HTTP запрос не удался
+     * @throws `ApiError::HttpRequest`, если HTTP запрос не удался или blogName не указан
      * @throws `ApiError::JsonParseDetailed`, если тело ответа не может быть распарсено в `Comment`
      * @throws `ApiError::Other`, если создание формы не удалось
      */
     createComment(
-      blogName: string,
       postId: string,
       blocks: CommentBlock[],
+      blogName?: string,
       replyId?: number,
     ): Promise<Comment>;
   }
 }
 
 BoostyClient.prototype.getCommentsResponse = async function (
-  blogName: string,
   postId: string,
+  blogName?: string,
   limit?: number,
   replyLimit?: number,
   order?: string,
   offset?: number,
 ): Promise<CommentsResponse> {
-  let path = `blog/${blogName}/post/${postId}/comment/`;
+  const name = this._getBlogName(blogName);
+  let path = `blog/${name}/post/${postId}/comment/`;
 
   const params: string[] = [];
   if (offset !== undefined) {
@@ -101,14 +102,14 @@ BoostyClient.prototype.getCommentsResponse = async function (
   }
 
   const response = await this._getRequest(path);
-  const handledResponse = await this._handleResponse(path, response);
+  const handledResponse = this._handleResponse(path, response);
 
   return this._parseJson(handledResponse) as CommentsResponse;
 };
 
 BoostyClient.prototype.getAllComments = async function (
-  blogName: string,
   postId: string,
+  blogName?: string,
   limit?: number,
   replyLimit?: number,
   order?: string,
@@ -118,8 +119,8 @@ BoostyClient.prototype.getAllComments = async function (
 
   while (true) {
     const resp: CommentsResponse = await this.getCommentsResponse(
-      blogName,
       postId,
+      blogName,
       limit,
       replyLimit,
       order,
@@ -150,12 +151,13 @@ BoostyClient.prototype.getAllComments = async function (
 };
 
 BoostyClient.prototype.createComment = async function (
-  blogName: string,
   postId: string,
   blocks: CommentBlock[],
+  blogName?: string,
   replyId?: number,
 ): Promise<Comment> {
-  const path = `blog/${blogName}/post/${postId}/comment/`;
+  const name = this._getBlogName(blogName);
+  const path = `blog/${name}/post/${postId}/comment/`;
 
   const formData = new FormData();
   formData.append('from_page', 'blog');
@@ -169,7 +171,7 @@ BoostyClient.prototype.createComment = async function (
   }
 
   const response = await this._postMultipart(path, formData);
-  const handledResponse = await this._handleResponse(path, response);
+  const handledResponse = this._handleResponse(path, response);
 
   return this._parseJson(handledResponse) as Comment;
 };

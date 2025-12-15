@@ -76,6 +76,7 @@ export type {
   Counters,
   ShowcaseItem,
 } from './showcase';
+export type { Point, Stats, Current } from './stats';
 
 // Экспортируем функции
 export {

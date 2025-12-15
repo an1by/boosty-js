@@ -52,7 +52,7 @@ export class AuthProvider {
     }
 
     // Если статический не установлен, но есть refresh+device_id, используем refresh flow
-    if (await this.hasRefreshAndDeviceId()) {
+    if (this.hasRefreshAndDeviceId()) {
       const token = await this.getAccessToken();
       headers['Authorization'] = `Bearer ${token}`;
     }
@@ -63,7 +63,7 @@ export class AuthProvider {
    *
    * Если `access` пустой, возвращает `AuthError::EmptyAccessToken`.
    */
-  async setAccessTokenOnly(access: string): Promise<void> {
+  setAccessTokenOnly(access: string): void {
     if (!access || access.trim() === '') {
       throw new AuthError('Empty access token', AuthErrorCode.EmptyAccessToken);
     }
@@ -79,10 +79,7 @@ export class AuthProvider {
    *
    * Возвращает ошибку, если любой из них пустой.
    */
-  async setRefreshTokenAndDeviceId(
-    refresh: string,
-    deviceId: string,
-  ): Promise<void> {
+  setRefreshTokenAndDeviceId(refresh: string, deviceId: string): void {
     if (!refresh || refresh.trim() === '') {
       throw new AuthError(
         'Empty refresh token',
@@ -199,21 +196,21 @@ export class AuthProvider {
   /**
    * Проверить, установлены ли и refresh token, и device ID
    */
-  async hasRefreshAndDeviceId(): Promise<boolean> {
+  hasRefreshAndDeviceId(): boolean {
     return !!(this.state.refreshToken && this.state.deviceId);
   }
 
   /**
    * Очистить статический токен доступа (отключает статическую аутентификацию)
    */
-  async clearAccessToken(): Promise<void> {
+  clearAccessToken(): void {
     this.state.staticAccessToken = null;
   }
 
   /**
    * Очистить refresh token и device ID (отключает refresh flow)
    */
-  async clearRefreshAndDeviceId(): Promise<void> {
+  clearRefreshAndDeviceId(): void {
     this.state.refreshToken = null;
     this.state.deviceId = null;
     this.state.accessToken = null;

@@ -42,7 +42,7 @@ BoostyClient.prototype.getUserSubscriptions = async function (
   }
 
   const response = await this._getRequest(path);
-  const handledResponse = await this._handleResponse(path, response);
+  const handledResponse = this._handleResponse(path, response);
 
   return this._parseJson(handledResponse) as SubscriptionsResponse;
 };

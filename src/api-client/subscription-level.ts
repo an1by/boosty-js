@@ -8,31 +8,32 @@ declare module '.' {
      *
      * Если `showFreeLevel` равен `Some(true)`, добавляет `?show_free_level=true` к URL
      *
-     * @param blogName - идентификатор или имя блога
+     * @param blogName - опциональный идентификатор или имя блога. Если не указан, используется значение по умолчанию
      * @param showFreeLevel - когда `Some(true)`, включить бесплатный уровень подписки в результаты
      * @returns При успехе возвращает `SubscriptionLevelResponse`, содержащий массив `"data"` с уровнями
-     * @throws `ApiError::HttpRequest`, если сетевой запрос не удался
+     * @throws `ApiError::HttpRequest`, если сетевой запрос не удался или blogName не указан
      * @throws `ApiError::JsonParse`, если HTTP ответ не может быть распарсен как JSON
      * @throws `ApiError::Deserialization`, если тело не может быть десериализовано в `SubscriptionLevelResponse`
      */
     getBlogSubscriptionLevels(
-      blogName: string,
+      blogName?: string,
       showFreeLevel?: boolean,
     ): Promise<SubscriptionLevelResponse>;
   }
 }
 
 BoostyClient.prototype.getBlogSubscriptionLevels = async function (
-  blogName: string,
+  blogName?: string,
   showFreeLevel?: boolean,
 ): Promise<SubscriptionLevelResponse> {
-  let path = `blog/${blogName}/subscription_level/`;
+  const name = this._getBlogName(blogName);
+  let path = `blog/${name}/subscription_level/`;
   if (showFreeLevel !== undefined) {
     path += `?show_free_level=${showFreeLevel}`;
   }
 
   const response = await this._getRequest(path);
-  const handledResponse = await this._handleResponse(path, response);
+  const handledResponse = this._handleResponse(path, response);
 
   return this._parseJson(handledResponse) as SubscriptionLevelResponse;
 };

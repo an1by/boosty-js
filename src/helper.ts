@@ -4,10 +4,10 @@ import { ApiError, ApiErrorCode } from './error';
 /**
  * Обработать ответ от запроса, проверив статус код и вернув ответ при успехе
  */
-export async function handleResponse<T>(
+export function handleResponse<T>(
   path: string,
   response: AxiosResponse<T>,
-): Promise<AxiosResponse<T>> {
+): AxiosResponse<T> {
   const status = response.status;
   checkStatus(status, path);
 

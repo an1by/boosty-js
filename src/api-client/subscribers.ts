@@ -6,7 +6,7 @@ declare module '.' {
     /**
      * Получить список подписчиков блога с опциональной сортировкой и пагинацией
      *
-     * @param blogName - идентификатор или имя блога
+     * @param blogName - опциональный идентификатор или имя блога. Если не указан, используется значение по умолчанию
      * @param sortBy - поле для сортировки (опционально)
      * @param offset - смещение для пагинации (опционально)
      * @param limit - максимальное количество подписчиков для возврата (опционально)
@@ -14,12 +14,12 @@ declare module '.' {
      * @returns При успехе возвращает `SubscribersResponse`, содержащий массив `data` с подписчиками, общее количество `total`, `limit` и `offset`
      * @throws `ApiError::Unauthorized`, если HTTP статус 401 Unauthorized
      * @throws `ApiError::HttpStatus` для других неуспешных HTTP статусов, со статусом и информацией об эндпоинте
-     * @throws `ApiError::HttpRequest`, если сетевой запрос не удался
+     * @throws `ApiError::HttpRequest`, если сетевой запрос не удался или blogName не указан
      * @throws `ApiError::JsonParse`, если HTTP ответ не может быть распарсен как JSON
      * @throws `ApiError::Deserialization`, если тело не может быть десериализовано в `SubscribersResponse`
      */
     getBlogSubscribers(
-      blogName: string,
+      blogName?: string,
       sortBy?: string,
       offset?: number,
       limit?: number,
@@ -29,13 +29,14 @@ declare module '.' {
 }
 
 BoostyClient.prototype.getBlogSubscribers = async function (
-  blogName: string,
+  blogName?: string,
   sortBy?: string,
   offset?: number,
   limit?: number,
   order?: string,
 ): Promise<SubscribersResponse> {
-  let path = `blog/${blogName}/subscribers`;
+  const name = this._getBlogName(blogName);
+  let path = `blog/${name}/subscribers`;
   const params: string[] = [];
   if (sortBy !== undefined) {
     params.push(`sort_by=${sortBy}`);
@@ -54,7 +55,7 @@ BoostyClient.prototype.getBlogSubscribers = async function (
   }
 
   const response = await this._getRequest(path);
-  const handledResponse = await this._handleResponse(path, response);
+  const handledResponse = this._handleResponse(path, response);
 
   return this._parseJson(handledResponse) as SubscribersResponse;
 };

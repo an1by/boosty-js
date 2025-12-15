@@ -14,8 +14,9 @@ export class BoostyClient {
   private authProvider: AuthProvider;
 
   constructor(
-    private client: AxiosInstance = axios.create(),
+    private defaultBlogName?: string,
     private baseUrl: string = 'https://api.boosty.to',
+    private client: AxiosInstance = axios.create(),
   ) {
     this.headers = this.prepareHeaders();
     this.authProvider = new AuthProvider(client, baseUrl);
@@ -46,8 +47,8 @@ export class BoostyClient {
    * @param accessToken - строка bearer токена; должна быть непустой
    * @throws `AuthError::EmptyAccessToken`, если `accessToken` пустой
    */
-  async setBearerToken(accessToken: string): Promise<void> {
-    await this.authProvider.setAccessTokenOnly(accessToken);
+  setBearerToken(accessToken: string): void {
+    this.authProvider.setAccessTokenOnly(accessToken);
   }
 
   /**
@@ -60,25 +61,41 @@ export class BoostyClient {
    * @throws `AuthError::EmptyRefreshToken`, если `refreshToken` пустой,
    * или `AuthError::EmptyDeviceId`, если `deviceId` пустой
    */
-  async setRefreshTokenAndDeviceId(
-    refreshToken: string,
-    deviceId: string,
-  ): Promise<void> {
-    await this.authProvider.setRefreshTokenAndDeviceId(refreshToken, deviceId);
+  setRefreshTokenAndDeviceId(refreshToken: string, deviceId: string): void {
+    this.authProvider.setRefreshTokenAndDeviceId(refreshToken, deviceId);
   }
 
   /**
    * Очистить refresh token и device ID (отключает refresh flow)
    */
-  async clearRefreshAndDeviceId(): Promise<void> {
-    await this.authProvider.clearRefreshAndDeviceId();
+  clearRefreshAndDeviceId(): void {
+    this.authProvider.clearRefreshAndDeviceId();
   }
 
   /**
    * Очистить токен доступа (отключает статический токен)
    */
-  async clearAccessToken(): Promise<void> {
-    await this.authProvider.clearAccessToken();
+  clearAccessToken(): void {
+    this.authProvider.clearAccessToken();
+  }
+
+  /**
+   * Установить blogName по умолчанию для всех методов API
+   *
+   * После установки, методы, которые требуют blogName, могут быть вызваны без указания blogName,
+   * и будет использоваться значение по умолчанию.
+   *
+   * @param blogName - идентификатор или имя блога для использования по умолчанию
+   */
+  setDefaultBlogName(blogName: string): void {
+    this.defaultBlogName = blogName;
+  }
+
+  /**
+   * Очистить blogName по умолчанию
+   */
+  clearDefaultBlogName(): void {
+    this.defaultBlogName = undefined;
   }
 
   /**
@@ -435,11 +452,11 @@ export class BoostyClient {
   }
 
   // Экспорт внутренних методов для использования в подмодулях
-  protected async _getRequest(path: string): Promise<AxiosResponse> {
+  protected _getRequest(path: string): Promise<AxiosResponse> {
     return this.getRequest(path);
   }
 
-  protected async _postRequest<T = unknown>(
+  protected _postRequest<T = unknown>(
     path: string,
     body: unknown,
     asForm: boolean,
@@ -447,18 +464,18 @@ export class BoostyClient {
     return this.postRequest<T>(path, body, asForm);
   }
 
-  protected async _postMultipart<T = unknown>(
+  protected _postMultipart<T = unknown>(
     path: string,
     formData: FormData,
   ): Promise<AxiosResponse<T>> {
     return this.postMultipart<T>(path, formData);
   }
 
-  protected async _deleteRequest(path: string): Promise<AxiosResponse> {
+  protected _deleteRequest(path: string): Promise<AxiosResponse> {
     return this.deleteRequest(path);
   }
 
-  protected async _putRequest<T = unknown>(
+  protected _putRequest<T = unknown>(
     path: string,
     body: unknown,
     asForm: boolean,
@@ -466,14 +483,32 @@ export class BoostyClient {
     return this.putRequest<T>(path, body, asForm);
   }
 
-  protected async _handleResponse<T>(
+  protected _handleResponse<T>(
     path: string,
     response: AxiosResponse<T>,
-  ): Promise<AxiosResponse<T>> {
+  ): AxiosResponse<T> {
     return handleResponse(path, response);
   }
 
   protected _parseJson<T = unknown>(response: AxiosResponse): T {
     return parseJson(response) as T;
+  }
+
+  /**
+   * Внутренний: получить blogName из параметра или использовать значение по умолчанию
+   *
+   * @param blogName - опциональный идентификатор или имя блога
+   * @returns Имя блога (из параметра или по умолчанию)
+   * @throws `ApiError`, если blogName не указан и не установлен по умолчанию
+   */
+  protected _getBlogName(blogName?: string): string {
+    const name = blogName ?? this.defaultBlogName;
+    if (!name) {
+      throw new ApiError(
+        'blogName is required. Either pass it as a parameter or set a default blogName using setDefaultBlogName()',
+        ApiErrorCode.HttpRequest,
+      );
+    }
+    return name;
   }
 }

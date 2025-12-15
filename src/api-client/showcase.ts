@@ -6,18 +6,18 @@ declare module '.' {
     /**
      * Получить витрину блога
      *
-     * @param blogName - Имя блога
+     * @param blogName - опциональное имя блога. Если не указано, используется значение по умолчанию
      * @param limit - Лимит
      * @param onlyVisible - Только видимые
      * @param offset - Смещение
      * @returns При успехе возвращает `ShowcaseResponse`, содержащий поле `data` с `showcase_items`
      * @throws `ApiError::Unauthorized`, если HTTP статус 401 Unauthorized
      * @throws `ApiError::HttpStatus` для других неуспешных HTTP статусов, со статусом и информацией об эндпоинте
-     * @throws `ApiError::HttpRequest`, если HTTP запрос не удался
+     * @throws `ApiError::HttpRequest`, если HTTP запрос не удался или blogName не указан
      * @throws `ApiError::JsonParseDetailed`, если тело ответа не может быть распарсено в `ShowcaseResponse`
      */
     getShowcase(
-      blogName: string,
+      blogName?: string,
       limit?: number,
       onlyVisible?: boolean,
       offset?: number,
@@ -26,24 +26,25 @@ declare module '.' {
     /**
      * Изменить статус витрины блога
      *
-     * @param blogName - Имя блога
      * @param status - Статус (true для включения, false для отключения)
+     * @param blogName - опциональное имя блога. Если не указано, используется значение по умолчанию
      * @returns При успехе возвращает `()`
      * @throws `ApiError::Unauthorized`, если HTTP статус 401 Unauthorized
      * @throws `ApiError::HttpStatus` для других неуспешных HTTP статусов, со статусом и информацией об эндпоинте
-     * @throws `ApiError::HttpRequest`, если HTTP запрос не удался
+     * @throws `ApiError::HttpRequest`, если HTTP запрос не удался или blogName не указан
      */
-    changeShowcaseStatus(blogName: string, status: boolean): Promise<void>;
+    changeShowcaseStatus(status: boolean, blogName?: string): Promise<void>;
   }
 }
 
 BoostyClient.prototype.getShowcase = async function (
-  blogName: string,
+  blogName?: string,
   limit?: number,
   onlyVisible?: boolean,
   offset?: number,
 ): Promise<ShowcaseResponse> {
-  let path = `blog/${blogName}/showcase/`;
+  const name = this._getBlogName(blogName);
+  let path = `blog/${name}/showcase/`;
 
   const params: string[] = [];
   if (offset !== undefined) {
@@ -61,17 +62,18 @@ BoostyClient.prototype.getShowcase = async function (
   }
 
   const response = await this._getRequest(path);
-  const handledResponse = await this._handleResponse(path, response);
+  const handledResponse = this._handleResponse(path, response);
 
   return this._parseJson(handledResponse) as ShowcaseResponse;
 };
 
 BoostyClient.prototype.changeShowcaseStatus = async function (
-  blogName: string,
   status: boolean,
+  blogName?: string,
 ): Promise<void> {
-  const path = `blog/${blogName}/showcase/status/`;
+  const name = this._getBlogName(blogName);
+  const path = `blog/${name}/showcase/status/`;
 
   const response = await this._putRequest(path, { is_enabled: status }, true);
-  await this._handleResponse(path, response);
+  this._handleResponse(path, response);
 };

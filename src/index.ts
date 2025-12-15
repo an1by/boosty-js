@@ -23,8 +23,6 @@ export * from './media-content';
 export * from './traits';
 export * from './model';
 
-// Импортируем методы API после экспорта BoostyClient
-// Это гарантирует, что класс полностью инициализирован перед модификацией prototype
 import './api-client/post';
 import './api-client/comment';
 import './api-client/target';
@@ -32,3 +30,4 @@ import './api-client/subscription-level';
 import './api-client/showcase';
 import './api-client/user';
 import './api-client/subscribers';
+import './api-client/stats';
