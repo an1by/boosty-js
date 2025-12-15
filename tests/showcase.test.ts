@@ -2,19 +2,19 @@ import axios, { AxiosInstance } from 'axios';
 import nock from 'nock';
 import fs from 'fs';
 import path from 'path';
-import { ApiClient } from '../src/apiClient';
+import { BoostyClient } from '../src/api-client';
 import { ApiError } from '../src/error';
 import { apiPath } from './helpers';
 
 describe('Showcase API', () => {
   let baseUrl: string;
-  let client: ApiClient;
+  let client: BoostyClient;
   let axiosInstance: AxiosInstance;
 
   beforeEach(() => {
     baseUrl = 'http://localhost:1234';
     axiosInstance = axios.create();
-    client = new ApiClient(axiosInstance, baseUrl);
+    client = new BoostyClient(axiosInstance, baseUrl);
   });
 
   afterEach(() => {
@@ -22,10 +22,7 @@ describe('Showcase API', () => {
   });
 
   function readFixture(name: string): string {
-    return fs.readFileSync(
-      path.join(__dirname, 'fixtures', name),
-      'utf-8',
-    );
+    return fs.readFileSync(path.join(__dirname, 'fixtures', name), 'utf-8');
   }
 
   test('test_get_showcase_success', async () => {
@@ -36,11 +33,9 @@ describe('Showcase API', () => {
     );
     const raw = readFixture('api_response_showcase.json');
 
-    nock(baseUrl)
-      .get(pathStr)
-      .reply(200, JSON.parse(raw), {
-        'Content-Type': 'application/json',
-      });
+    nock(baseUrl).get(pathStr).reply(200, JSON.parse(raw), {
+      'Content-Type': 'application/json',
+    });
 
     const resp = await client.getShowcase(blog, 10, true);
     expect(resp.data.showcaseItems.length).toBeGreaterThan(0);
@@ -51,11 +46,9 @@ describe('Showcase API', () => {
 
     const pathStr = apiPath(`blog/${blog}/showcase/`);
 
-    nock(baseUrl)
-      .get(pathStr)
-      .reply(200, 'invalid json', {
-        'Content-Type': 'application/json',
-      });
+    nock(baseUrl).get(pathStr).reply(200, 'invalid json', {
+      'Content-Type': 'application/json',
+    });
 
     await expect(client.getShowcase(blog)).rejects.toThrow(ApiError);
   });
@@ -82,9 +75,13 @@ describe('Showcase API', () => {
     nock(baseUrl)
       .put(pathStr)
       .matchHeader('content-type', 'application/x-www-form-urlencoded')
-      .reply(200, { is_enabled: true }, {
-        'Content-Type': 'application/json',
-      });
+      .reply(
+        200,
+        { is_enabled: true },
+        {
+          'Content-Type': 'application/json',
+        },
+      );
 
     const res = await client.changeShowcaseStatus(blog, true);
     expect(res).toBeUndefined();
@@ -98,14 +95,14 @@ describe('Showcase API', () => {
     nock(baseUrl).put(pathStr).reply(401);
     nock(baseUrl).put(pathStr).reply(401);
 
-    await expect(
-      client.changeShowcaseStatus(blog, true),
-    ).rejects.toThrow(ApiError);
-    await expect(
-      client.changeShowcaseStatus(blog, true),
-    ).rejects.toMatchObject({
-      code: 'Unauthorized',
-    });
+    await expect(client.changeShowcaseStatus(blog, true)).rejects.toThrow(
+      ApiError,
+    );
+    await expect(client.changeShowcaseStatus(blog, true)).rejects.toMatchObject(
+      {
+        code: 'Unauthorized',
+      },
+    );
   });
 
   test('test_change_showcase_status_http_error', async () => {
@@ -116,9 +113,9 @@ describe('Showcase API', () => {
     nock(baseUrl).put(pathStr).reply(500);
     nock(baseUrl).put(pathStr).reply(500);
 
-    await expect(
-      client.changeShowcaseStatus(blog, false),
-    ).rejects.toThrow(ApiError);
+    await expect(client.changeShowcaseStatus(blog, false)).rejects.toThrow(
+      ApiError,
+    );
     await expect(
       client.changeShowcaseStatus(blog, false),
     ).rejects.toMatchObject({
@@ -126,4 +123,3 @@ describe('Showcase API', () => {
     });
   });
 });
-

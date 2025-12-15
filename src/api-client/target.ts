@@ -1,4 +1,4 @@
-import { ApiClient } from '../apiClient';
+import { BoostyClient } from '.';
 import {
   TargetResponse,
   Target,
@@ -8,8 +8,8 @@ import {
 } from '../model';
 import { ApiError, ApiErrorCode } from '../error';
 
-declare module '../apiClient' {
-  interface ApiClient {
+declare module '.' {
+  interface BoostyClient {
     /**
      * Получить все цели для блога
      *
@@ -68,7 +68,7 @@ declare module '../apiClient' {
   }
 }
 
-ApiClient.prototype.getBlogTargets = async function (
+BoostyClient.prototype.getBlogTargets = async function (
   blogName: string,
 ): Promise<TargetResponse> {
   const path = `target/${blogName}/`;
@@ -79,7 +79,7 @@ ApiClient.prototype.getBlogTargets = async function (
   return this._parseJson(handledResponse) as TargetResponse;
 };
 
-ApiClient.prototype.createBlogTarget = async function (
+BoostyClient.prototype.createBlogTarget = async function (
   blogName: string,
   description: string,
   targetSum: number,
@@ -100,7 +100,7 @@ ApiClient.prototype.createBlogTarget = async function (
   return this._parseJson(handledResponse) as Target;
 };
 
-ApiClient.prototype.deleteBlogTarget = async function (
+BoostyClient.prototype.deleteBlogTarget = async function (
   targetId: number,
 ): Promise<void> {
   const path = `target/${targetId}`;
@@ -118,7 +118,7 @@ ApiClient.prototype.deleteBlogTarget = async function (
   }
 };
 
-ApiClient.prototype.updateBlogTarget = async function (
+BoostyClient.prototype.updateBlogTarget = async function (
   targetId: number,
   description: string,
   targetSum: number,

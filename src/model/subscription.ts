@@ -1,4 +1,4 @@
-import { Promo } from './subscriptionLevel';
+import { Promo } from './subscription-level';
 
 /**
  * Ответ API, содержащий пагинированный список подписок
@@ -89,4 +89,3 @@ export interface BlogFlags {
   accept_donation_messages: boolean;
   is_rss_feed_enabled: boolean;
 }
-

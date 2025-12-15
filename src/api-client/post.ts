@@ -1,8 +1,8 @@
-import { ApiClient } from '../apiClient';
+import { BoostyClient } from '.';
 import { Post, PostsResponse } from '../model';
 
-declare module '../apiClient' {
-  interface ApiClient {
+declare module '.' {
+  interface BoostyClient {
     /**
      * Получить один пост один раз, без автоматической повторной попытки при "not available" или HTTP 401
      *
@@ -37,7 +37,7 @@ declare module '../apiClient' {
   }
 }
 
-ApiClient.prototype.getPost = async function (
+BoostyClient.prototype.getPost = async function (
   blogName: string,
   postId: string,
 ): Promise<Post> {
@@ -49,7 +49,7 @@ ApiClient.prototype.getPost = async function (
   return this._parseJson(handledResponse) as Post;
 };
 
-ApiClient.prototype.getPosts = async function (
+BoostyClient.prototype.getPosts = async function (
   blogName: string,
   limit: number,
   pageSize?: number,

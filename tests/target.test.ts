@@ -2,20 +2,20 @@ import axios, { AxiosInstance } from 'axios';
 import nock from 'nock';
 import fs from 'fs';
 import path from 'path';
-import { ApiClient } from '../src/apiClient';
+import { BoostyClient } from '../src/api-client';
 import { ApiError } from '../src/error';
 import { TargetType } from '../src/model';
 import { apiPath } from './helpers';
 
 describe('Target API', () => {
   let baseUrl: string;
-  let client: ApiClient;
+  let client: BoostyClient;
   let axiosInstance: AxiosInstance;
 
   beforeEach(() => {
     baseUrl = 'http://localhost:1234';
     axiosInstance = axios.create();
-    client = new ApiClient(axiosInstance, baseUrl);
+    client = new BoostyClient(axiosInstance, baseUrl);
   });
 
   afterEach(() => {
@@ -23,10 +23,7 @@ describe('Target API', () => {
   });
 
   function readFixture(name: string): string {
-    return fs.readFileSync(
-      path.join(__dirname, 'fixtures', name),
-      'utf-8',
-    );
+    return fs.readFileSync(path.join(__dirname, 'fixtures', name), 'utf-8');
   }
 
   test('test_get_targets_success', async () => {
@@ -35,11 +32,9 @@ describe('Target API', () => {
 
     const raw = readFixture('api_response_targets.json');
 
-    nock(baseUrl)
-      .get(apiPathStr)
-      .reply(200, JSON.parse(raw), {
-        'Content-Type': 'application/json',
-      });
+    nock(baseUrl).get(apiPathStr).reply(200, JSON.parse(raw), {
+      'Content-Type': 'application/json',
+    });
 
     const targets = await client.getBlogTargets(blog);
     expect(targets.data.length).toBeGreaterThan(0);
@@ -53,11 +48,9 @@ describe('Target API', () => {
     const blog = 'blogx';
     const apiPathStr = apiPath(`target/${blog}/`);
 
-    nock(baseUrl)
-      .get(apiPathStr)
-      .reply(200, 'not a valid json', {
-        'Content-Type': 'application/json',
-      });
+    nock(baseUrl).get(apiPathStr).reply(200, 'not a valid json', {
+      'Content-Type': 'application/json',
+    });
 
     await expect(client.getBlogTargets(blog)).rejects.toThrow(ApiError);
   });
@@ -148,11 +141,13 @@ describe('Target API', () => {
     const targetId = 456;
     const pathStr = apiPath(`target/${targetId}`);
 
-    nock(baseUrl)
-      .delete(pathStr)
-      .reply(200, {}, {
+    nock(baseUrl).delete(pathStr).reply(
+      200,
+      {},
+      {
         'Content-Type': 'application/json',
-      });
+      },
+    );
 
     const result = await client.deleteBlogTarget(targetId);
     expect(result).toBeUndefined();
@@ -162,11 +157,9 @@ describe('Target API', () => {
     const targetId = 789;
     const pathStr = apiPath(`target/${targetId}`);
 
-    nock(baseUrl)
-      .delete(pathStr)
-      .reply(200, 'invalid json', {
-        'Content-Type': 'application/json',
-      });
+    nock(baseUrl).delete(pathStr).reply(200, 'invalid json', {
+      'Content-Type': 'application/json',
+    });
 
     await expect(client.deleteBlogTarget(targetId)).rejects.toThrow();
   });
@@ -215,11 +208,9 @@ describe('Target API', () => {
     const targetId = 123;
     const pathStr = apiPath(`target/${targetId}`);
 
-    nock(baseUrl)
-      .put(pathStr)
-      .reply(200, 'invalid json', {
-        'Content-Type': 'application/json',
-      });
+    nock(baseUrl).put(pathStr).reply(200, 'invalid json', {
+      'Content-Type': 'application/json',
+    });
 
     await expect(
       client.updateBlogTarget(targetId, 'desc', 100.0),
@@ -237,4 +228,3 @@ describe('Target API', () => {
     ).rejects.toThrow();
   });
 });
-

@@ -1,4 +1,16 @@
-import { MediaData, PlayerUrl, OkVideoData } from './model';
+import {
+  MediaData,
+  PlayerUrl,
+  OkVideoData,
+  ImageData,
+  VideoData,
+  FileData,
+  AudioData,
+  TextData,
+  SmileData,
+  LinkData,
+  ListData,
+} from './model';
 
 /**
  * Представляет один элемент контента, извлеченный из `Post` или `Comment`
@@ -48,19 +60,23 @@ export function extractContent(data: MediaData[]): ContentItem[] {
  */
 function extractMedia(media: MediaData, out: ContentItem[]): void {
   switch (media.type) {
-    case 'image':
+    case 'image': {
+      const imageData = media.data as ImageData;
       out.push({
         type: 'image',
-        url: media.data.url,
-        id: (media.data as any).id,
+        url: imageData.url,
+        id: imageData.id,
       });
       break;
-    case 'video':
+    }
+    case 'video': {
+      const videoData = media.data as VideoData;
       out.push({
         type: 'video',
-        url: media.data.url,
+        url: videoData.url,
       });
       break;
+    }
     case 'ok_video': {
       const okVideo = media.data as OkVideoData;
       const bestUrl = pickHigherQualityForVideo(okVideo.player_urls);
@@ -75,7 +91,7 @@ function extractMedia(media: MediaData, out: ContentItem[]): void {
       break;
     }
     case 'audio_file': {
-      const audio = media.data as any;
+      const audio = media.data as AudioData;
       out.push({
         type: 'audio',
         url: audio.url,
@@ -86,7 +102,7 @@ function extractMedia(media: MediaData, out: ContentItem[]): void {
       break;
     }
     case 'text': {
-      const text = media.data as any;
+      const text = media.data as TextData;
       out.push({
         type: 'text',
         content: text.content,
@@ -95,7 +111,7 @@ function extractMedia(media: MediaData, out: ContentItem[]): void {
       break;
     }
     case 'smile': {
-      const smile = media.data as any;
+      const smile = media.data as SmileData;
       out.push({
         type: 'smile',
         small_url: smile.small_url,
@@ -107,7 +123,7 @@ function extractMedia(media: MediaData, out: ContentItem[]): void {
       break;
     }
     case 'link': {
-      const link = media.data as any;
+      const link = media.data as LinkData;
       out.push({
         type: 'link',
         explicit: link.explicit,
@@ -117,7 +133,7 @@ function extractMedia(media: MediaData, out: ContentItem[]): void {
       break;
     }
     case 'file': {
-      const file = media.data as any;
+      const file = media.data as FileData;
       out.push({
         type: 'file',
         url: file.url,
@@ -127,7 +143,7 @@ function extractMedia(media: MediaData, out: ContentItem[]): void {
       break;
     }
     case 'list': {
-      const list = media.data as any;
+      const list = media.data as ListData;
       const items: ContentItem[][] = [];
       for (const li of list.items) {
         const subItems: ContentItem[] = [];
@@ -172,13 +188,13 @@ function extractMedia(media: MediaData, out: ContentItem[]): void {
  * @returns `string` с выбранным URL, или `null`, если все URL пустые или список пуст
  */
 export function pickHigherQualityForVideo(
-  playerUrls: PlayerUrl[]
+  playerUrls: PlayerUrl[],
 ): string | null {
   const PRIORITY = ['ultra_hd', 'full_hd', 'high', 'medium', 'low'];
 
   for (const pref of PRIORITY) {
     const pu = playerUrls.find(
-      (pu) => pu.type === pref && pu.url && pu.url.trim() !== ''
+      (pu) => pu.type === pref && pu.url && pu.url.trim() !== '',
     );
     if (pu) {
       return pu.url;
@@ -188,4 +204,3 @@ export function pickHigherQualityForVideo(
   const fallback = playerUrls.find((pu) => pu.url && pu.url.trim() !== '');
   return fallback ? fallback.url : null;
 }
-

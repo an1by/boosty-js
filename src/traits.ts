@@ -1,4 +1,4 @@
-import { ContentItem } from './mediaContent';
+import { ContentItem } from './media-content';
 import { Post, Comment } from './model';
 
 /**
@@ -45,4 +45,3 @@ export function postSafeTitle(post: Post): string {
 export function commentNotAvailable(comment: Comment): boolean {
   return comment.data.length === 0;
 }
-

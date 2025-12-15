@@ -59,7 +59,7 @@ export type {
   DiscordData,
   DiscordRole,
   TelegramApp,
-} from './subscriptionLevel';
+} from './subscription-level';
 export type {
   Subscription,
   SubscriptionsResponse,

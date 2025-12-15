@@ -2,19 +2,19 @@ import axios, { AxiosInstance } from 'axios';
 import nock from 'nock';
 import fs from 'fs';
 import path from 'path';
-import { ApiClient } from '../src/apiClient';
+import { BoostyClient } from '../src/api-client';
 import { ApiError } from '../src/error';
 import { apiPath } from './helpers';
 
 describe('Post API', () => {
   let baseUrl: string;
-  let client: ApiClient;
+  let client: BoostyClient;
   let axiosInstance: AxiosInstance;
 
   beforeEach(() => {
     baseUrl = 'http://localhost:1234';
     axiosInstance = axios.create();
-    client = new ApiClient(axiosInstance, baseUrl);
+    client = new BoostyClient(axiosInstance, baseUrl);
   });
 
   afterEach(() => {

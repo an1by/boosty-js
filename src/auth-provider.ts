@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
-import { AuthError, AuthErrorCode, ResultAuth } from './error';
+import { AuthError, AuthErrorCode } from './error';
 
 /**
  * Ответ от эндпоинта обновления токена

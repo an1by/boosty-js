@@ -1,8 +1,8 @@
-import { ApiClient } from '../apiClient';
+import { BoostyClient } from '.';
 import { SubscriptionsResponse } from '../model';
 
-declare module '../apiClient' {
-  interface ApiClient {
+declare module '.' {
+  interface BoostyClient {
     /**
      * Получить подписки текущего пользователя, с опциональной пагинацией и фильтром follow
      *
@@ -25,7 +25,7 @@ declare module '../apiClient' {
   }
 }
 
-ApiClient.prototype.getUserSubscriptions = async function (
+BoostyClient.prototype.getUserSubscriptions = async function (
   limit?: number,
   withFollow?: boolean,
 ): Promise<SubscriptionsResponse> {

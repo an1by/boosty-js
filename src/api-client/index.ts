@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { AuthProvider } from './authProvider';
-import { ApiError, ApiErrorCode } from './error';
-import { handleResponse, parseJson } from './helper';
+import { AuthProvider } from '../auth-provider';
+import { ApiError, ApiErrorCode } from '../error';
+import { handleResponse, parseJson } from '../helper';
 
 /**
  * Клиент для взаимодействия с Boosty API
@@ -9,13 +9,13 @@ import { handleResponse, parseJson } from './helper';
  * Обрабатывает базовый URL, общие заголовки и делегирует аутентификацию `AuthProvider`.
  * Предоставляет методы для получения одного поста или нескольких постов.
  */
-export class ApiClient {
+export class BoostyClient {
   private headers: Record<string, string>;
   private authProvider: AuthProvider;
 
   constructor(
-    private client: AxiosInstance,
-    private baseUrl: string,
+    private client: AxiosInstance = axios.create(),
+    private baseUrl: string = 'https://api.boosty.to',
   ) {
     this.headers = this.prepareHeaders();
     this.authProvider = new AuthProvider(client, baseUrl);

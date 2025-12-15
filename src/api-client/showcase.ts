@@ -1,8 +1,8 @@
-import { ApiClient } from '../apiClient';
+import { BoostyClient } from '.';
 import { ShowcaseResponse } from '../model';
 
-declare module '../apiClient' {
-  interface ApiClient {
+declare module '.' {
+  interface BoostyClient {
     /**
      * Получить витрину блога
      *
@@ -37,7 +37,7 @@ declare module '../apiClient' {
   }
 }
 
-ApiClient.prototype.getShowcase = async function (
+BoostyClient.prototype.getShowcase = async function (
   blogName: string,
   limit?: number,
   onlyVisible?: boolean,
@@ -66,7 +66,7 @@ ApiClient.prototype.getShowcase = async function (
   return this._parseJson(handledResponse) as ShowcaseResponse;
 };
 
-ApiClient.prototype.changeShowcaseStatus = async function (
+BoostyClient.prototype.changeShowcaseStatus = async function (
   blogName: string,
   status: boolean,
 ): Promise<void> {

@@ -1,8 +1,8 @@
 import { SubscribersResponse } from '../model';
-import { ApiClient } from '../apiClient';
+import { BoostyClient } from '.';
 
-declare module '../apiClient' {
-  interface ApiClient {
+declare module '.' {
+  interface BoostyClient {
     /**
      * Получить список подписчиков блога с опциональной сортировкой и пагинацией
      *
@@ -28,7 +28,7 @@ declare module '../apiClient' {
   }
 }
 
-ApiClient.prototype.getBlogSubscribers = async function (
+BoostyClient.prototype.getBlogSubscribers = async function (
   blogName: string,
   sortBy?: string,
   offset?: number,

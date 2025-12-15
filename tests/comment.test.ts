@@ -2,20 +2,20 @@ import axios, { AxiosInstance } from 'axios';
 import nock from 'nock';
 import fs from 'fs';
 import path from 'path';
-import { ApiClient } from '../src/apiClient';
+import { BoostyClient } from '../src/api-client';
 import { ApiError } from '../src/error';
 import { createTextBlock, createTextEndBlock } from '../src/model';
 import { apiPath } from './helpers';
 
 describe('Comment API', () => {
   let baseUrl: string;
-  let client: ApiClient;
+  let client: BoostyClient;
   let axiosInstance: AxiosInstance;
 
   beforeEach(() => {
     baseUrl = 'http://localhost:1234';
     axiosInstance = axios.create();
-    client = new ApiClient(axiosInstance, baseUrl);
+    client = new BoostyClient(axiosInstance, baseUrl);
   });
 
   afterEach(() => {
@@ -23,10 +23,7 @@ describe('Comment API', () => {
   });
 
   function readFixture(name: string): string {
-    return fs.readFileSync(
-      path.join(__dirname, 'fixtures', name),
-      'utf-8',
-    );
+    return fs.readFileSync(path.join(__dirname, 'fixtures', name), 'utf-8');
   }
 
   test('test_create_comment_unauthorized', async () => {
@@ -39,9 +36,9 @@ describe('Comment API', () => {
 
     const blocks = [createTextBlock('hello')];
 
-    await expect(
-      client.createComment(blog, postId, blocks),
-    ).rejects.toThrow(ApiError);
+    await expect(client.createComment(blog, postId, blocks)).rejects.toThrow(
+      ApiError,
+    );
     await expect(
       client.createComment(blog, postId, blocks),
     ).rejects.toMatchObject({
@@ -54,17 +51,15 @@ describe('Comment API', () => {
     const postId = 'p';
     const pathStr = apiPath(`blog/${blog}/post/${postId}/comment/`);
 
-    nock(baseUrl)
-      .post(pathStr)
-      .reply(200, 'not valid json', {
-        'Content-Type': 'application/json',
-      });
+    nock(baseUrl).post(pathStr).reply(200, 'not valid json', {
+      'Content-Type': 'application/json',
+    });
 
     const blocks = [createTextBlock('hi')];
 
-    await expect(
-      client.createComment(blog, postId, blocks),
-    ).rejects.toThrow(ApiError);
+    await expect(client.createComment(blog, postId, blocks)).rejects.toThrow(
+      ApiError,
+    );
   });
 
   test('test_get_comments_response_unauthorized', async () => {
@@ -75,9 +70,9 @@ describe('Comment API', () => {
     nock(baseUrl).get(pathStr).reply(401);
     nock(baseUrl).get(pathStr).reply(401);
 
-    await expect(
-      client.getCommentsResponse(blog, postId),
-    ).rejects.toThrow(ApiError);
+    await expect(client.getCommentsResponse(blog, postId)).rejects.toThrow(
+      ApiError,
+    );
     await expect(
       client.getCommentsResponse(blog, postId),
     ).rejects.toMatchObject({
@@ -90,15 +85,13 @@ describe('Comment API', () => {
     const postId = 'p';
     const pathStr = apiPath(`blog/${blog}/post/${postId}/comment/`);
 
-    nock(baseUrl)
-      .get(pathStr)
-      .reply(200, 'invalid json', {
-        'Content-Type': 'application/json',
-      });
+    nock(baseUrl).get(pathStr).reply(200, 'invalid json', {
+      'Content-Type': 'application/json',
+    });
 
-    await expect(
-      client.getCommentsResponse(blog, postId),
-    ).rejects.toThrow(ApiError);
+    await expect(client.getCommentsResponse(blog, postId)).rejects.toThrow(
+      ApiError,
+    );
   });
 
   test('test_create_comment_success', async () => {
@@ -109,11 +102,9 @@ describe('Comment API', () => {
 
     const pathStr = apiPath(`blog/${blog}/post/${postId}/comment/`);
 
-    nock(baseUrl)
-      .post(pathStr)
-      .reply(200, JSON.parse(commentRespBody), {
-        'Content-Type': 'application/json',
-      });
+    nock(baseUrl).post(pathStr).reply(200, JSON.parse(commentRespBody), {
+      'Content-Type': 'application/json',
+    });
 
     const blocks = [
       createTextBlock('This is a test comment from file.'),
@@ -143,11 +134,9 @@ describe('Comment API', () => {
       'api_response_comments_list_page1.json',
     );
 
-    nock(baseUrl)
-      .get(pathWithParams)
-      .reply(200, JSON.parse(commentsRespBody), {
-        'Content-Type': 'application/json',
-      });
+    nock(baseUrl).get(pathWithParams).reply(200, JSON.parse(commentsRespBody), {
+      'Content-Type': 'application/json',
+    });
 
     const res = await client.getCommentsResponse(
       blog,
@@ -165,4 +154,3 @@ describe('Comment API', () => {
     expect(res.extra.isLast).toBe(false);
   });
 });
-

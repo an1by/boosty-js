@@ -1,7 +1,14 @@
 {
   "name": "boosty",
-  "version": "0.0.3",
-  "main": "index.js",
+  "version": "0.0.4",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "default": "./dist/src/index.js"
+    }
+  },
   "scripts": {
     "build": "rimraf ./dist && tsc",
     "start:prod": "npm run build && node ./dist/index.ts",

@@ -1,8 +1,8 @@
-import { ApiClient } from '../apiClient';
+import { BoostyClient } from '.';
 import { SubscriptionLevelResponse } from '../model';
 
-declare module '../apiClient' {
-  interface ApiClient {
+declare module '.' {
+  interface BoostyClient {
     /**
      * Получить уровни подписки для блога, с опциональным включением бесплатного уровня
      *
@@ -22,7 +22,7 @@ declare module '../apiClient' {
   }
 }
 
-ApiClient.prototype.getBlogSubscriptionLevels = async function (
+BoostyClient.prototype.getBlogSubscriptionLevels = async function (
   blogName: string,
   showFreeLevel?: boolean,
 ): Promise<SubscriptionLevelResponse> {

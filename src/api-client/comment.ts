@@ -1,8 +1,8 @@
-import { ApiClient } from '../apiClient';
+import { BoostyClient } from '.';
 import { Comment, CommentsResponse, CommentBlock } from '../model';
 
-declare module '../apiClient' {
-  interface ApiClient {
+declare module '.' {
+  interface BoostyClient {
     /**
      * Получить ответ комментариев
      *
@@ -72,7 +72,7 @@ declare module '../apiClient' {
   }
 }
 
-ApiClient.prototype.getCommentsResponse = async function (
+BoostyClient.prototype.getCommentsResponse = async function (
   blogName: string,
   postId: string,
   limit?: number,
@@ -106,7 +106,7 @@ ApiClient.prototype.getCommentsResponse = async function (
   return this._parseJson(handledResponse) as CommentsResponse;
 };
 
-ApiClient.prototype.getAllComments = async function (
+BoostyClient.prototype.getAllComments = async function (
   blogName: string,
   postId: string,
   limit?: number,
@@ -149,7 +149,7 @@ ApiClient.prototype.getAllComments = async function (
   return allComments;
 };
 
-ApiClient.prototype.createComment = async function (
+BoostyClient.prototype.createComment = async function (
   blogName: string,
   postId: string,
   blocks: CommentBlock[],

@@ -12,17 +12,17 @@ npm install boosty
 
 ```typescript
 import axios from 'axios';
-import { ApiClient } from 'boosty';
+import { BoostyClient } from 'boosty';
 
 // Создаем экземпляр клиента
 const client = axios.create();
-const apiClient = new ApiClient(client, 'https://api.boosty.to');
+const boostyClient = new BoostyClient(client, 'https://api.boosty.to');
 
 // Настраиваем аутентификацию (bearer token)
-await apiClient.setBearerToken('your-access-token');
+await boostyClient.setBearerToken('your-access-token');
 
 // Получаем пост
-const post = await apiClient.getPost('blogname', 'post-id');
+const post = await boostyClient.getPost('blogname', 'post-id');
 console.log(post.title);
 ```
 
@@ -42,13 +42,13 @@ SDK поддерживает два способа аутентификации:
 ### Bearer Token (статический токен)
 
 ```typescript
-await apiClient.setBearerToken('your-access-token');
+await boostyClient.setBearerToken('your-access-token');
 ```
 
 ### Refresh Token Flow (OAuth-подобный)
 
 ```typescript
-await apiClient.setRefreshTokenAndDeviceId(
+await boostyClient.setRefreshTokenAndDeviceId(
   'your-refresh-token',
   'your-device-id',
 );
@@ -62,20 +62,20 @@ await apiClient.setRefreshTokenAndDeviceId(
 
 ```typescript
 // Получить один пост
-const post = await apiClient.getPost('blogname', 'post-id');
+const post = await boostyClient.getPost('blogname', 'post-id');
 
 // Получить несколько постов
-const posts = await apiClient.getPosts('blogname', 50, 20);
+const posts = await boostyClient.getPosts('blogname', 50, 20);
 ```
 
 ### Комментарии
 
 ```typescript
 // Получить комментарии поста
-const comments = await apiClient.getAllComments('blogname', 'post-id');
+const comments = await boostyClient.getAllComments('blogname', 'post-id');
 
 // Получить ответ с пагинацией
-const response = await apiClient.getCommentsResponse(
+const response = await boostyClient.getCommentsResponse(
   'blogname',
   'post-id',
   20, // limit
@@ -86,7 +86,7 @@ const response = await apiClient.getCommentsResponse(
 // Создать комментарий
 import { createTextBlock } from 'boosty';
 
-const newComment = await apiClient.createComment(
+const newComment = await boostyClient.createComment(
   'blogname',
   'post-id',
   [createTextBlock('Текст комментария')],
@@ -100,10 +100,10 @@ const newComment = await apiClient.createComment(
 import { TargetType } from 'boosty';
 
 // Получить все цели блога
-const targets = await apiClient.getBlogTargets('blogname');
+const targets = await boostyClient.getBlogTargets('blogname');
 
 // Создать новую цель
-const target = await apiClient.createBlogTarget(
+const target = await boostyClient.createBlogTarget(
   'blogname',
   'Описание цели',
   100000, // целевая сумма
@@ -111,29 +111,42 @@ const target = await apiClient.createBlogTarget(
 );
 
 // Обновить цель
-const updated = await apiClient.updateBlogTarget(
+const updated = await boostyClient.updateBlogTarget(
   targetId,
   'Новое описание',
   150000,
 );
 
 // Удалить цель
-await apiClient.deleteBlogTarget(targetId);
+await boostyClient.deleteBlogTarget(targetId);
 ```
 
 ### Подписки
 
 ```typescript
 // Получить уровни подписки блога
-const levels = await apiClient.getBlogSubscriptionLevels(
+const levels = await boostyClient.getBlogSubscriptionLevels(
   'blogname',
   true, // showFreeLevel
 );
 
 // Получить подписки текущего пользователя
-const subscriptions = await apiClient.getUserSubscriptions(
+const subscriptions = await boostyClient.getUserSubscriptions(
   50, // limit
   true, // withFollow
+);
+```
+
+### Подписчики
+
+```typescript
+// Получить список подписчиков блога
+const subscribers = await boostyClient.getBlogSubscribers(
+  'blogname',
+  'created_at', // sortBy
+  0, // offset
+  50, // limit
+  'desc', // order
 );
 ```
 
@@ -141,12 +154,15 @@ const subscriptions = await apiClient.getUserSubscriptions(
 
 ```typescript
 // Получить витрину блога
-const showcase = await apiClient.getShowcase(
+const showcase = await boostyClient.getShowcase(
   'blogname',
   20, // limit
   true, // onlyVisible
   0, // offset
 );
+
+// Изменить статус витрины
+await boostyClient.changeShowcaseStatus('blogname', true);
 ```
 
 ## Модели данных
@@ -161,6 +177,7 @@ import {
   SubscriptionLevel,
   ShowcaseResponse,
   SubscriptionsResponse,
+  SubscribersResponse,
   // ... и другие
 } from 'boosty';
 ```
@@ -173,7 +190,7 @@ SDK использует унифицированную систему обра�
 import { ApiError, ApiErrorCode } from 'boosty';
 
 try {
-  const post = await apiClient.getPost('blogname', 'post-id');
+  const post = await boostyClient.getPost('blogname', 'post-id');
 } catch (error) {
   if (error instanceof ApiError) {
     switch (error.code) {
@@ -246,14 +263,15 @@ npm run start:dev
 
 ```
 src/
-├── apiClient.ts          # Основной класс ApiClient
+├── apiClient.ts          # Основной класс BoostyClient
 ├── apiClient/            # Модули API методов
 │   ├── post.ts
 │   ├── comment.ts
 │   ├── target.ts
 │   ├── subscriptionLevel.ts
 │   ├── showcase.ts
-│   └── user.ts
+│   ├── user.ts
+│   └── subscribers.ts
 ├── model/                # Типы и модели данных
 ├── authProvider.ts       # Управление аутентификацией
 ├── error.ts              # Обработка ошибок

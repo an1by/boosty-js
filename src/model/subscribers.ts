@@ -1,4 +1,4 @@
-import { Promo, SubscriptionLevel } from './subscriptionLevel';
+import { Promo, SubscriptionLevel } from './subscription-level';
 
 export interface SubscribersResponse {
   data: Subscriber[];
